@@ -32,49 +32,10 @@ public class Program
 
         return result;
     }
-    public static void Task1()
+
+    public static void SolveTask(TargetFunction f, Constraint[] c)
     {
-        Console.WriteLine("--------Задание 1--------");
-        const int n = 2;
-        const int m = 3;
-
-        double[] funcCoefs = new double[n] { -1, 2 };
-
-        double[,] constraintsCoefs = new double[m, n + 1]
-        {
-            { 1,3, 9 },
-            { 3,-2, 5 },
-            { 2,1, 6 },
-        };
-
-        //MaxFunc(funcCoefs, constraintsCoefs);
-    }
-
-    public static void Task2()
-    {
-        Console.WriteLine("\n--------Задание 2--------");
-        const int n = 2;
-        const int m = 3;
-
-        double[] funcCoefs = new double[n] { 2, -1 };
-
-        double[,] constraintsCoefs = new double[m, n + 1]
-        {
-            { 3,-2, 12 },
-            { -1,2, 8 },
-            { -2,-1, -6 },
-        };
-
-        //MaxFunc(funcCoefs, constraintsCoefs);
-    }
-
-    public static void Main(string[] args)
-    {
-        var f = new TargetFunction(new double[12] { 2,5,4,5,  1,2,1,4, 3,1,5,2, }, 0);
-
-        var c = CreateConstraintsForMongeKantarovichProblem(f.Coefs.ToArray(), new double[3] { 60, 80, 60 }, new double[4] { 50, 40, 70, 40 });
-
-        var resultVec = LinearSolver.Optimize(f, c, minimize: true, 1000);
+        var resultVec = LinearSolver.Optimize(f, c, minimize: false, 1000);
 
         double sum = resultVec.Zip(f.Coefs.ToArray(), (a, b) => a * b).Sum();
 
@@ -96,6 +57,31 @@ public class Program
             }
         }
         Console.WriteLine($" = {sum,5:F2}");
+    }
+
+    public static void Main(string[] args)
+    {
+        var f1 = new TargetFunction(new double[] { 1, 2 }, 0);
+        var c1 = new Constraint[]
+        {
+            new Constraint(new double[] {1, 3}, 9, ConstraintType.LowerOrEqual),
+            new Constraint(new double[] {3, -2}, 5, ConstraintType.LowerOrEqual),
+            new Constraint(new double[] {2, 1}, 6, ConstraintType.LowerOrEqual),
+        };
+
+        Console.WriteLine("\nЗадание 1");
+        SolveTask(f1, c1);
+
+        var f2 = new TargetFunction(new double[] { 2, -1 }, 0);
+        var c2 = new Constraint[]
+        {
+            new Constraint(new double[] {3, -2}, 12, ConstraintType.LowerOrEqual),
+            new Constraint(new double[] {-1, 2}, 8, ConstraintType.LowerOrEqual),
+            new Constraint(new double[] {2, 3}, 6, ConstraintType.GreaterOrEqual),
+        };
+
+        Console.WriteLine("\nЗадание 2");
+        SolveTask(f2, c2);
         Console.ReadKey();
     }
 }

@@ -40,7 +40,7 @@ public class Tableau
         // Запись строки функции
         for (int j = 0; j < f.Coefs.Length; j++)
         {
-            tableau_[Height - 1, j] = f.Coefs[j];
+            tableau_[Height - 1, j] = -f.Coefs[j];
         }
 
         for (int j = f.Coefs.Length; j < Width; j++)

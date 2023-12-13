@@ -37,12 +37,14 @@ public class LinearSolver
         var canonicalConstraints = constraints.ToCanonicalForm();
 
         var funcCoefs = new double[f.Coefs.Length];
+        var constant = f.Constant;
         if (minimize)
         {
             for (int i = 0; i < f.Coefs.Length; i++)
             {
                 funcCoefs[i] = f.Coefs[i] * -1;
             }
+            constant *= -1;
         }
         else
         {
@@ -51,7 +53,7 @@ public class LinearSolver
                 funcCoefs[i] = f.Coefs[i];
             }
         }
-        var func = new TargetFunction(funcCoefs, -f.Constant);
+        var func = new TargetFunction(funcCoefs, constant);
 
         int artificalVarsCount = 0;
         for (int i = 0; i < canonicalConstraints.Length; i++)
@@ -67,11 +69,17 @@ public class LinearSolver
 
         if (artificalVarsCount != 0)
         {
-            optimalSolution = SimplexMethod(CalculateArtificalBasis(func, canonicalConstraints, artificalVarsCount), maxIterationsCount);
+            var tableau = CalculateArtificalBasis(func, canonicalConstraints, artificalVarsCount);
+            Console.WriteLine("Симплекс таблица после метода искусственного базиса:");
+            Console.WriteLine(tableau);
+            optimalSolution = SimplexMethod(tableau, maxIterationsCount);
         }
         else
         {
-            optimalSolution = SimplexMethod(new Tableau(func, canonicalConstraints), maxIterationsCount);
+            var tableau = new Tableau(func, canonicalConstraints);
+            Console.WriteLine("Исходная симплекс таблица:");
+            Console.WriteLine(tableau);
+            optimalSolution = SimplexMethod(tableau, maxIterationsCount);
         }
 
         var result = new double[f.Coefs.Length];
@@ -89,7 +97,7 @@ public class LinearSolver
     {
         int origN = canonicalConstraints[0].LeftPart.Length;
         int n = origN + artificalVarsCount;
-        const double M = 100;
+        const double M = 500;
 
         // Искусственные переменные, выраженные через другие переменные
         var artificalVarsCoefs = new double[artificalVarsCount, origN + 1];
@@ -141,13 +149,6 @@ public class LinearSolver
             newConstant -= artificalVarsCoefs[i, 0] * M;
         }
 
-        // Чтобы работало с обычным симплекс-методом, надо сделать так
-        for (int i = 0; i < finedFunc.Length; i++)
-        {
-            finedFunc[i] *= -1;
-        }
-        newConstant *= -1;
-
         var newF = new TargetFunction(finedFunc, newConstant);
 
         return new Tableau(newF, newConstraints);
@@ -157,7 +158,6 @@ public class LinearSolver
     private static double[] SimplexMethod(Tableau tableau, int maxIterationsCount)
     {
         int iterationCount = 0;
-        Console.WriteLine(tableau);
         while (!IsOptimized(tableau) && iterationCount < maxIterationsCount)
         {
             // Ищем индекс ведущего столбца
